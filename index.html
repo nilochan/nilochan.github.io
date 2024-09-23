@@ -3,241 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Interactive Globe</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <title>Enhanced Bank Website Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
+        :root {
+            --primary-color: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary-color: #f3f4f6;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f6f8fc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            font-family: Arial, sans-serif;
-            background-color: #000000;
+            width: 90%;
+            max-width: 1200px;
         }
-        #globeCanvas {
-            width: 100%;
-            height: 100%;
+        .navbar {
+            background-color: var(--primary-color);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        #info {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 300px;
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
         }
-        #menu {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 100;
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
         }
-        .dropdown {
+        .tab-button {
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            transition: all 0.3s ease;
             position: relative;
-            display: inline-block;
-            margin-right: 10px;
+            overflow: hidden;
         }
-        .dropdown-content {
+        .tab-button::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+        .tab-button:hover::after, .tab-button.active::after {
+            width: 100%;
+            left: 0;
+        }
+        .tab-button:hover, .tab-button.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .content-area {
+            padding: 2rem;
+        }
+        .tab-content {
             display: none;
-            position: absolute;
-            background-color: #f9f9f9;
-            min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1;
+            animation: fadeIn 0.5s ease;
         }
-        .dropdown:hover .dropdown-content {
+        .tab-content.active {
             display: block;
         }
-        .dropdown-content a {
-            color: black;
-            padding: 12px 16px;
-            text-decoration: none;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .input-group {
+            margin-bottom: 1rem;
+        }
+        .input-group label {
             display: block;
+            margin-bottom: 0.5rem;
+            color: #4b5563;
         }
-        .dropdown-content a:hover {
-            background-color: #f1f1f1;
+        .input-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            transition: all 0.3s ease;
         }
-        #toggleView {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 100;
-            padding: 10px;
-            background-color: #4CAF50;
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            cursor: pointer;
+            border-radius: 0.375rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .submit-btn:hover {
+            background-color: var(--primary-dark);
         }
     </style>
 </head>
 <body>
-    <canvas id="globeCanvas"></canvas>
-    <div id="info"></div>
-    <div id="menu">
-        <div class="dropdown">
-            <span>Continents</span>
-            <div class="dropdown-content" id="continentMenu"></div>
+    <div class="container">
+        <nav class="navbar">
+            <div class="logo">MyBank</div>
+            <div class="nav-tabs">
+                <button class="tab-button active" data-tab="home">Home</button>
+                <button class="tab-button" data-tab="credit-card">Credit Card</button>
+                <button class="tab-button" data-tab="deposit">Deposit</button>
+                <button class="tab-button" data-tab="career">Career</button>
+                <button class="tab-button" data-tab="locate-us">Locate Us</button>
+                <button class="tab-button" data-tab="about">About</button>
+            </div>
+        </nav>
+        
+        <div class="content-area">
+            <div id="home" class="tab-content active">
+                <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">Bank Login</h2>
+                <form class="max-w-md mx-auto">
+                    <div class="input-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Log in</button>
+                </form>
+            </div>
+            <div id="credit-card" class="tab-content">
+                <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">Credit Card Services</h2>
+                <p class="text-center text-gray-600">Explore our range of credit card options and benefits.</p>
+            </div>
+            <div id="deposit" class="tab-content">
+                <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">Deposit Accounts</h2>
+                <p class="text-center text-gray-600">Learn about our savings and checking account options.</p>
+            </div>
+            <div id="career" class="tab-content">
+                <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">Career Opportunities</h2>
+                <p class="text-center text-gray-600">Join our team and grow your career in finance.</p>
+            </div>
+            <div id="locate-us" class="tab-content">
+                <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">Find a Branch</h2>
+                <p class="text-center text-gray-600">Locate our nearest branch or ATM.</p>
+            </div>
+            <div id="about" class="tab-content">
+                <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">About Us</h2>
+                <p class="text-center text-gray-600">Learn about our history, mission, and values.</p>
+            </div>
         </div>
     </div>
-    <button id="toggleView">Toggle Flat Map</button>
 
     <script>
-        let scene, camera, renderer, globe, raycaster, mouse, controls;
-        let isGlobeView = true;
-        const continents = {
-            "Africa": ["Egypt", "Nigeria", "South Africa"],
-            "Asia": ["China", "India", "Japan"],
-            "Europe": ["France", "Germany", "Italy"],
-            "North America": ["Canada", "Mexico", "United States"],
-            "South America": ["Brazil", "Argentina", "Peru"],
-            "Oceania": ["Australia", "New Zealand", "Fiji"]
-        };
-        const countryData = {
-            "United States": { color: 0x3366cc, capital: "Washington, D.C.", population: 331002651, area: 9833517, continent: "North America", flag: "🇺🇸" },
-            "China": { color: 0xdc3912, capital: "Beijing", population: 1439323776, area: 9596961, continent: "Asia", flag: "🇨🇳" },
-            "India": { color: 0xff9900, capital: "New Delhi", population: 1380004385, area: 3287263, continent: "Asia", flag: "🇮🇳" },
-            "Brazil": { color: 0x109618, capital: "Brasília", population: 212559417, area: 8515767, continent: "South America", flag: "🇧🇷" },
-            "Russia": { color: 0x990099, capital: "Moscow", population: 145934462, area: 17098246, continent: "Europe", flag: "🇷🇺" },
-            // Add more countries here...
-        };
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab-button');
+            const contents = document.querySelectorAll('.tab-content');
 
-        function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('globeCanvas'), antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-
-            raycaster = new THREE.Raycaster();
-            mouse = new THREE.Vector2();
-
-            const geometry = new THREE.SphereGeometry(5, 64, 64);
-            const material = new THREE.MeshPhongMaterial({
-                map: new THREE.TextureLoader().load('https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73909/world.topo.bathy.200412.3x5400x2700.jpg'),
-                bumpMap: new THREE.TextureLoader().load('https://upload.wikimedia.org/wikipedia/commons/5/57/Earthbump1k.jpg'),
-                bumpScale: 0.05,
-                specularMap: new THREE.TextureLoader().load('https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Earth_specular_map.jpg/1280px-Earth_specular_map.jpg'),
-                specular: new THREE.Color('grey')
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.getAttribute('data-tab');
+                    
+                    contents.forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    tabs.forEach(t => {
+                        t.classList.remove('active');
+                    });
+                    
+                    document.getElementById(target).classList.add('active');
+                    tab.classList.add('active');
+                });
             });
-
-            globe = new THREE.Mesh(geometry, material);
-            scene.add(globe);
-
-            const ambientLight = new THREE.AmbientLight(0x404040, 1);
-            scene.add(ambientLight);
-
-            const pointLight = new THREE.PointLight(0xffffff, 1);
-            pointLight.position.set(10, 10, 10);
-            scene.add(pointLight);
-
-            camera.position.z = 15;
-
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.25;
-            controls.enableZoom = true;
-
-            addCountryHighlights();
-            createMenu();
-
-            window.addEventListener('resize', onWindowResize, false);
-            document.getElementById('globeCanvas').addEventListener('mousemove', onMouseMove, false);
-            document.getElementById('toggleView').addEventListener('click', toggleView, false);
-
-            animate();
-        }
-
-        function addCountryHighlights() {
-            Object.entries(countryData).forEach(([country, data]) => {
-                const lat = Math.random() * Math.PI - Math.PI/2;
-                const lon = Math.random() * Math.PI * 2;
-                const radius = 5.05;
-                const x = radius * Math.cos(lat) * Math.cos(lon);
-                const y = radius * Math.sin(lat);
-                const z = radius * Math.cos(lat) * Math.sin(lon);
-
-                const geometry = new THREE.CircleGeometry(0.2, 32);
-                const material = new THREE.MeshBasicMaterial({ color: data.color });
-                const highlight = new THREE.Mesh(geometry, material);
-                highlight.position.set(x, y, z);
-                highlight.lookAt(0, 0, 0);
-                highlight.userData = { country, ...data };
-                scene.add(highlight);
-            });
-        }
-
-        function createMenu() {
-            const continentMenu = document.getElementById('continentMenu');
-            Object.entries(continents).forEach(([continent, countries]) => {
-                const continentItem = document.createElement('div');
-                continentItem.className = 'dropdown';
-                continentItem.innerHTML = `
-                    <span>${continent}</span>
-                    <div class="dropdown-content">
-                        ${countries.map(country => `<a href="#" onclick="selectCountry('${country}')">${country}</a>`).join('')}
-                    </div>
-                `;
-                continentMenu.appendChild(continentItem);
-            });
-        }
-
-        function selectCountry(country) {
-            if (countryData[country]) {
-                updateInfo(countryData[country], country);
-            }
-        }
-
-        function onMouseMove(event) {
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(scene.children);
-
-            if (intersects.length > 0) {
-                const intersected = intersects[0].object;
-                if (intersected.userData && intersected.userData.country) {
-                    updateInfo(intersected.userData, intersected.userData.country);
-                }
-            }
-        }
-
-        function updateInfo(data, country) {
-            document.getElementById('info').innerHTML = `
-                <h2>${data.flag} ${country}</h2>
-                <p>Capital: ${data.capital}</p>
-                <p>Population: ${data.population.toLocaleString()}</p>
-                <p>Area: ${data.area.toLocaleString()} km²</p>
-                <p>Continent: ${data.continent}</p>
-            `;
-        }
-
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        function toggleView() {
-            isGlobeView = !isGlobeView;
-            if (isGlobeView) {
-                globe.geometry = new THREE.SphereGeometry(5, 64, 64);
-                camera.position.set(0, 0, 15);
-            } else {
-                globe.geometry = new THREE.PlaneGeometry(20, 10);
-                camera.position.set(0, 0, 10);
-            }
-            controls.update();
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
-        }
-
-        init();
+        });
     </script>
 </body>
 </html>
