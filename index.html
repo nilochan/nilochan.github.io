@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive 3D Globe</title>
+    <title>Enhanced Interactive Globe</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
     <style>
@@ -13,6 +13,7 @@
             height: 100%;
             overflow: hidden;
             font-family: Arial, sans-serif;
+            background-color: #000000;
         }
         #globeCanvas {
             width: 100%;
@@ -20,30 +21,86 @@
         }
         #info {
             position: absolute;
-            top: 10px;
+            bottom: 10px;
             left: 10px;
             background-color: rgba(255, 255, 255, 0.8);
             padding: 20px;
             border-radius: 10px;
             max-width: 300px;
         }
+        #menu {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+        #toggleView {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 100;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <canvas id="globeCanvas"></canvas>
-    <div id="info">
-        <h2>Country Information</h2>
-        <p>Hover over a country to see information.</p>
+    <div id="info"></div>
+    <div id="menu">
+        <div class="dropdown">
+            <span>Continents</span>
+            <div class="dropdown-content" id="continentMenu"></div>
+        </div>
     </div>
+    <button id="toggleView">Toggle Flat Map</button>
 
     <script>
         let scene, camera, renderer, globe, raycaster, mouse, controls;
+        let isGlobeView = true;
+        const continents = {
+            "Africa": ["Egypt", "Nigeria", "South Africa"],
+            "Asia": ["China", "India", "Japan"],
+            "Europe": ["France", "Germany", "Italy"],
+            "North America": ["Canada", "Mexico", "United States"],
+            "South America": ["Brazil", "Argentina", "Peru"],
+            "Oceania": ["Australia", "New Zealand", "Fiji"]
+        };
         const countryData = {
-            "United States": { color: 0x3366cc, capital: "Washington, D.C.", population: 331002651, area: 9833517 },
-            "China": { color: 0xdc3912, capital: "Beijing", population: 1439323776, area: 9596961 },
-            "India": { color: 0xff9900, capital: "New Delhi", population: 1380004385, area: 3287263 },
-            "Brazil": { color: 0x109618, capital: "Brasília", population: 212559417, area: 8515767 },
-            "Russia": { color: 0x990099, capital: "Moscow", population: 145934462, area: 17098246 }
+            "United States": { color: 0x3366cc, capital: "Washington, D.C.", population: 331002651, area: 9833517, continent: "North America", flag: "🇺🇸" },
+            "China": { color: 0xdc3912, capital: "Beijing", population: 1439323776, area: 9596961, continent: "Asia", flag: "🇨🇳" },
+            "India": { color: 0xff9900, capital: "New Delhi", population: 1380004385, area: 3287263, continent: "Asia", flag: "🇮🇳" },
+            "Brazil": { color: 0x109618, capital: "Brasília", population: 212559417, area: 8515767, continent: "South America", flag: "🇧🇷" },
+            "Russia": { color: 0x990099, capital: "Moscow", population: 145934462, area: 17098246, continent: "Europe", flag: "🇷🇺" },
+            // Add more countries here...
         };
 
         function init() {
@@ -55,19 +112,24 @@
             raycaster = new THREE.Raycaster();
             mouse = new THREE.Vector2();
 
-            const geometry = new THREE.SphereGeometry(5, 32, 32);
+            const geometry = new THREE.SphereGeometry(5, 64, 64);
             const material = new THREE.MeshPhongMaterial({
-                map: new THREE.TextureLoader().load('https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Equirectangular_projection_SW.jpg/640px-Equirectangular_projection_SW.jpg'),
+                map: new THREE.TextureLoader().load('https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73909/world.topo.bathy.200412.3x5400x2700.jpg'),
                 bumpMap: new THREE.TextureLoader().load('https://upload.wikimedia.org/wikipedia/commons/5/57/Earthbump1k.jpg'),
                 bumpScale: 0.05,
+                specularMap: new THREE.TextureLoader().load('https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Earth_specular_map.jpg/1280px-Earth_specular_map.jpg'),
+                specular: new THREE.Color('grey')
             });
 
             globe = new THREE.Mesh(geometry, material);
             scene.add(globe);
 
-            const light = new THREE.PointLight(0xffffff, 1, 100);
-            light.position.set(10, 10, 10);
-            scene.add(light);
+            const ambientLight = new THREE.AmbientLight(0x404040, 1);
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0xffffff, 1);
+            pointLight.position.set(10, 10, 10);
+            scene.add(pointLight);
 
             camera.position.z = 15;
 
@@ -77,9 +139,11 @@
             controls.enableZoom = true;
 
             addCountryHighlights();
+            createMenu();
 
             window.addEventListener('resize', onWindowResize, false);
             document.getElementById('globeCanvas').addEventListener('mousemove', onMouseMove, false);
+            document.getElementById('toggleView').addEventListener('click', toggleView, false);
 
             animate();
         }
@@ -88,12 +152,12 @@
             Object.entries(countryData).forEach(([country, data]) => {
                 const lat = Math.random() * Math.PI - Math.PI/2;
                 const lon = Math.random() * Math.PI * 2;
-                const radius = 5.05; // Slightly larger than the globe
+                const radius = 5.05;
                 const x = radius * Math.cos(lat) * Math.cos(lon);
                 const y = radius * Math.sin(lat);
                 const z = radius * Math.cos(lat) * Math.sin(lon);
 
-                const geometry = new THREE.CircleGeometry(0.3, 32);
+                const geometry = new THREE.CircleGeometry(0.2, 32);
                 const material = new THREE.MeshBasicMaterial({ color: data.color });
                 const highlight = new THREE.Mesh(geometry, material);
                 highlight.position.set(x, y, z);
@@ -101,6 +165,27 @@
                 highlight.userData = { country, ...data };
                 scene.add(highlight);
             });
+        }
+
+        function createMenu() {
+            const continentMenu = document.getElementById('continentMenu');
+            Object.entries(continents).forEach(([continent, countries]) => {
+                const continentItem = document.createElement('div');
+                continentItem.className = 'dropdown';
+                continentItem.innerHTML = `
+                    <span>${continent}</span>
+                    <div class="dropdown-content">
+                        ${countries.map(country => `<a href="#" onclick="selectCountry('${country}')">${country}</a>`).join('')}
+                    </div>
+                `;
+                continentMenu.appendChild(continentItem);
+            });
+        }
+
+        function selectCountry(country) {
+            if (countryData[country]) {
+                updateInfo(countryData[country], country);
+            }
         }
 
         function onMouseMove(event) {
@@ -113,20 +198,37 @@
             if (intersects.length > 0) {
                 const intersected = intersects[0].object;
                 if (intersected.userData && intersected.userData.country) {
-                    document.getElementById('info').innerHTML = `
-                        <h2>${intersected.userData.country}</h2>
-                        <p>Capital: ${intersected.userData.capital}</p>
-                        <p>Population: ${intersected.userData.population.toLocaleString()}</p>
-                        <p>Area: ${intersected.userData.area.toLocaleString()} km²</p>
-                    `;
+                    updateInfo(intersected.userData, intersected.userData.country);
                 }
             }
+        }
+
+        function updateInfo(data, country) {
+            document.getElementById('info').innerHTML = `
+                <h2>${data.flag} ${country}</h2>
+                <p>Capital: ${data.capital}</p>
+                <p>Population: ${data.population.toLocaleString()}</p>
+                <p>Area: ${data.area.toLocaleString()} km²</p>
+                <p>Continent: ${data.continent}</p>
+            `;
         }
 
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function toggleView() {
+            isGlobeView = !isGlobeView;
+            if (isGlobeView) {
+                globe.geometry = new THREE.SphereGeometry(5, 64, 64);
+                camera.position.set(0, 0, 15);
+            } else {
+                globe.geometry = new THREE.PlaneGeometry(20, 10);
+                camera.position.set(0, 0, 10);
+            }
+            controls.update();
         }
 
         function animate() {
