@@ -1,11 +1,77 @@
-/* style.css */
-a {
-    text-decoration: none; /* Remove underline */
-    color: blue;           /* Set link color */
-    font-weight: bold;     /* Make text bold */
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Globe</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+        }
+        #globe {
+            width: 300px;
+            height: 300px;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Globe_icon.svg/2048px-Globe_icon.svg.png');
+            background-size: cover;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        #globe:hover {
+            transform: scale(1.1);
+        }
+        #info {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="globe"></div>
+        <div id="info">
+            <h2>Country Information</h2>
+            <p>Click the globe to get random country info!</p>
+        </div>
+    </div>
 
-a:hover {
-    text-decoration: underline; /* Add underline on hover */
-    color: red;               /* Change color on hover */
-}
+    <script>
+        const globe = document.getElementById('globe');
+        const info = document.getElementById('info');
+        const countries = [
+            { name: "United States", capital: "Washington, D.C.", population: 331002651, area: 9833517 },
+            { name: "China", capital: "Beijing", population: 1439323776, area: 9596961 },
+            { name: "India", capital: "New Delhi", population: 1380004385, area: 3287263 },
+            { name: "Brazil", capital: "Brasília", population: 212559417, area: 8515767 },
+            { name: "Russia", capital: "Moscow", population: 145934462, area: 17098246 }
+        ];
+
+        globe.addEventListener('click', () => {
+            const randomCountry = countries[Math.floor(Math.random() * countries.length)];
+            info.innerHTML = `
+                <h2>${randomCountry.name}</h2>
+                <p>Capital: ${randomCountry.capital}</p>
+                <p>Population: ${randomCountry.population.toLocaleString()}</p>
+                <p>Area: ${randomCountry.area.toLocaleString()} km²</p>
+            `;
+            globe.style.transform = 'rotate(360deg)';
+            setTimeout(() => {
+                globe.style.transform = 'rotate(0deg)';
+            }, 500);
+        });
+    </script>
+</body>
+</html>
